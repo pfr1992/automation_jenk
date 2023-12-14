@@ -258,8 +258,8 @@ elem_login_button = find_element_load(driver, By.XPATH, ELEM_LOGIN_BUTTON_XPATH)
 elem_username.send_keys(username)
 elem_password.send_keys(password)
 elem_login_button.click()
-driver.save_screenshot("teste.png")
 time.sleep(15)
+driver.save_screenshot("teste.png")
 driver.close()
 
 # # %% Preencher Dados Cliente na tela
