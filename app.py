@@ -27,7 +27,7 @@ import glob
 
 # %% CLI_PATH & CREDENTIALS_PATH
 CLI_PATH = "./"
-CREDENTIALS_PATH = "./credentials.txt"
+CREDENTIALS_PATH = "./credentials1.txt"
 
 
 # %% Read XLSX
