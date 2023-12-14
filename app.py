@@ -26,8 +26,8 @@ import smtplib
 import glob
 
 # %% CLI_PATH & CREDENTIALS_PATH
-CLI_PATH = "./Clientes" 
-CREDENTIALS_PATH = "./credentials1.txt"
+CLI_PATH = "./" 
+CREDENTIALS_PATH = "credentials1.txt"
 
 
 # %% Read XLSX
