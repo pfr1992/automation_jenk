@@ -147,7 +147,7 @@ def read_credentials(verbose=True):
 
 from seleniumbase import Driver
 
-driver = Driver(uc=True,headed=False)
+driver = Driver(uc=True,headed=False,undetectable=True, undetected=True, agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver.uc_open_with_reconnect("https://canal360i.cloud.itau.com.br/login/iparceiros",reconnect_time=5)
 #driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
@@ -258,7 +258,7 @@ elem_username.send_keys(username)
 elem_password.send_keys(password)
 elem_login_button.click()
 time.sleep(2)
-print("Entrei migao") 
+
 # %% Preencher Dados Cliente na tela
 ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
 
@@ -279,6 +279,7 @@ while (
     except ElementClickInterceptedException:
         print("wwwwElementClickInterceptedException occurred. Retrying...")
 driver.save_screenshot("fotu.png")
+print("Entrei migao") 
 driver.close()
 # shadow_host1 = find_element_load(
 #     driver, By.CSS_SELECTOR, "mf-parceirossimulacao[ng-version='13.4.0']"
