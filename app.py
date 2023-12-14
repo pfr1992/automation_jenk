@@ -26,7 +26,7 @@ import smtplib
 import glob
 
 # %% CLI_PATH & CREDENTIALS_PATH
-CLI_PATH = "./Clientes"
+CLI_PATH = "./"
 CREDENTIALS_PATH = "./credentials.txt"
 
 
