@@ -260,7 +260,7 @@ for x in list(range(10)):
     elem_password.send_keys(password)
     elem_login_button.click()
     time.sleep(2)
-    print = ( x , ".png")
+    print = ( str(x) , ".png")
 
     driver.save_screenshot(print)
     
