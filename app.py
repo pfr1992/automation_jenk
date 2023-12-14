@@ -145,36 +145,35 @@ def read_credentials(verbose=True):
 
 (username, company, password) = read_credentials()
 
-from seleniumbase import Driver
+#from seleniumbase import Driver
 
-driver = Driver(uc=True)
-time.sleep(3)
-driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+#driver = Driver(uc=True)
+#time.sleep(3)
+#driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
 
 
 
 
 # %% Chrome Options
-# options = uc.ChromeOptions()
+options = uc.ChromeOptions()
 
 # # options.headless = True
 # options.user_data_dir = r"C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
+options.add_argument("--window-size=1920,1080")
+options.add_argument("--start-maximized")
+options.add_argument("--disable-extensions")
+options.add_argument("--disable-application-cache")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--start-zoom=25")
 
-# options.add_argument("--window-size=1920,1080")
-# options.add_argument("--start-maximized")
-# options.add_argument("--disable-extensions")
-# options.add_argument("--disable-application-cache")
-# options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--start-zoom=25")
-
-# options.add_argument(
+#options.add_argument(
 #     r"--user-data-dir=C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
 # )
 
-# options.add_argument("--disable-gpu")
-# options.add_argument("--no-sandbox")
-# options.add_argument("--disable-setuid-sandbox")
+options.add_argument("--disable-gpu")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-setuid-sandbox")
 # # options.add_argument("--headless")
 
 # options.add_experimental_option(
@@ -187,13 +186,13 @@ driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 #     },
 # )
 
-# options.add_argument("--no-first-run --no-service-autorun --password-store=basic")
-# driver = uc.Chrome(use_subprocess=True, options=options)
+options.add_argument("--no-first-run --no-service-autorun --password-store=basic")
+driver = uc.Chrome(use_subprocess=True, options=options)
 
-# driver.implicitly_wait(30)
-# driver.get("chrome://settings/")
-# driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
-# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+driver.implicitly_wait(30)
+driver.get("chrome://settings/")
+driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
+driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
 # driver = Driver(uc=True)
 # driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
