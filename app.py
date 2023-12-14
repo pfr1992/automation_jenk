@@ -26,7 +26,7 @@ import smtplib
 import glob
 
 # %% CLI_PATH & CREDENTIALS_PATH
-CLI_PATH = "C://projects//automation-consorcio//Clientes"
+CLI_PATH = "./Clientes"
 CREDENTIALS_PATH = "./credentials.txt"
 
 
@@ -145,45 +145,54 @@ def read_credentials(verbose=True):
 
 (username, company, password) = read_credentials()
 
-# %% Chrome Options
-options = uc.ChromeOptions()
+from seleniumbase import Driver
 
-# options.headless = True
-options.user_data_dir = r"C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
-
-options.add_argument("--window-size=1920,1080")
-options.add_argument("--start-maximized")
-options.add_argument("--disable-extensions")
-options.add_argument("--disable-application-cache")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--start-zoom=25")
-
-options.add_argument(
-    r"--user-data-dir=C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
-)
-
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-setuid-sandbox")
-# options.add_argument("--headless")
-
-options.add_experimental_option(
-    "prefs",
-    {
-        "download.default_directory": "C://projects//automation-consorcio",
-        "download.prompt_for_download": False,
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True,
-    },
-)
-
-options.add_argument("--no-first-run --no-service-autorun --password-store=basic")
-driver = uc.Chrome(use_subprocess=True, options=options)
-
-driver.implicitly_wait(30)
-driver.get("chrome://settings/")
-driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
+driver = Driver(uc=True)
 driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+
+driver.close()
+
+
+
+# %% Chrome Options
+# options = uc.ChromeOptions()
+
+# # options.headless = True
+# options.user_data_dir = r"C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
+
+# options.add_argument("--window-size=1920,1080")
+# options.add_argument("--start-maximized")
+# options.add_argument("--disable-extensions")
+# options.add_argument("--disable-application-cache")
+# options.add_argument("--disable-dev-shm-usage")
+# options.add_argument("--start-zoom=25")
+
+# options.add_argument(
+#     r"--user-data-dir=C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
+# )
+
+# options.add_argument("--disable-gpu")
+# options.add_argument("--no-sandbox")
+# options.add_argument("--disable-setuid-sandbox")
+# # options.add_argument("--headless")
+
+# options.add_experimental_option(
+#     "prefs",
+#     {
+#         "download.default_directory": "C://projects//automation-consorcio",
+#         "download.prompt_for_download": False,
+#         "download.directory_upgrade": True,
+#         "safebrowsing.enabled": True,
+#     },
+# )
+
+# options.add_argument("--no-first-run --no-service-autorun --password-store=basic")
+# driver = uc.Chrome(use_subprocess=True, options=options)
+
+# driver.implicitly_wait(30)
+# driver.get("chrome://settings/")
+# driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
+# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
 # driver = Driver(uc=True)
 # driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
@@ -250,6 +259,7 @@ elem_username.send_keys(username)
 elem_password.send_keys(password)
 elem_login_button.click()
 driver.save_screenshot("teste.png")
+driver.close()
 
 # # %% Preencher Dados Cliente na tela
 # ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
