@@ -259,6 +259,7 @@ elem_username.send_keys(username)
 elem_password.send_keys(password)
 elem_login_button.click()
 driver.save_screenshot("teste.png")
+time.sleep(15)
 driver.close()
 
 # # %% Preencher Dados Cliente na tela
