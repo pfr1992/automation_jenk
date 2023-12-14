@@ -254,37 +254,32 @@ elem_username = find_element_load(driver, By.ID, ELEM_USERNAME_ID)
 elem_password = find_element_load(driver, By.ID, ELEM_PASSWORD_ID)
 elem_login_button = find_element_load(driver, By.XPATH, ELEM_LOGIN_BUTTON_XPATH)
 
-for x in list(range(10)):
-    time.sleep(5)
-    elem_username.send_keys(username)
-    elem_password.send_keys(password)
-    elem_login_button.click()
-    time.sleep(2)
-    print = ( str(x) + ".png")
+elem_username.send_keys(username)
+elem_password.send_keys(password)
+elem_login_button.click()
+time.sleep(2)
+ 
+# %% Preencher Dados Cliente na tela
+ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
 
-    driver.save_screenshot(print)
-    
+elem_discount_item_expander = find_element_load(
+    driver, By.ID, ELEM_DISCOUNT_ITEM_EXPANDER_XPATH
+)
+wait = WebDriverWait(driver, 30)
+
+while (
+    driver.current_url
+    != "https://canal360i.cloud.itau.com.br/painel/wrapper/999/simulacao"
+):
+    elem_discount_item_expander = find_element_load(
+        driver, By.ID, ELEM_DISCOUNT_ITEM_EXPANDER_XPATH
+    )
+    try:
+        elem_discount_item_expander.click()
+    except ElementClickInterceptedException:
+        print("wwwwElementClickInterceptedException occurred. Retrying...")
+driver.save_screenshot("fotu.png")
 driver.close()
-# # %% Preencher Dados Cliente na tela
-# ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
-
-# elem_discount_item_expander = find_element_load(
-#     driver, By.ID, ELEM_DISCOUNT_ITEM_EXPANDER_XPATH
-# )
-# wait = WebDriverWait(driver, 30)
-
-# while (
-#     driver.current_url
-#     != "https://canal360i.cloud.itau.com.br/painel/wrapper/999/simulacao"
-# ):
-#     elem_discount_item_expander = find_element_load(
-#         driver, By.ID, ELEM_DISCOUNT_ITEM_EXPANDER_XPATH
-#     )
-#     try:
-#         elem_discount_item_expander.click()
-#     except ElementClickInterceptedException:
-#         print("wwwwElementClickInterceptedException occurred. Retrying...")
-
 # shadow_host1 = find_element_load(
 #     driver, By.CSS_SELECTOR, "mf-parceirossimulacao[ng-version='13.4.0']"
 # )
