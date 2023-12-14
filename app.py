@@ -26,8 +26,8 @@ import smtplib
 import glob
 
 # %% CLI_PATH & CREDENTIALS_PATH
-CLI_PATH = "./Clientes"
-CREDENTIALS_PATH = "./credentials.txt"
+CLI_PATH = "./Clientes" 
+CREDENTIALS_PATH = "./credentials1.txt"
 
 
 # %% Read XLSX
@@ -147,10 +147,9 @@ def read_credentials(verbose=True):
 
 from seleniumbase import Driver
 
-driver = Driver(uc=True)
-driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
-
-driver.close()
+driver = Driver(uc=True,headless=False)
+driver.uc_open_with_reconnect("https://canal360i.cloud.itau.com.br/login/iparceiros",reconnect_time=5)
+#driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
 
 
