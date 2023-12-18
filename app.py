@@ -717,7 +717,7 @@ ELEM_SELECT_TABLE = find_element_load(
     shadow_root1, By.CSS_SELECTOR, ELEM_SELECT_TABLE_ID
 )
 
-for x in list(range(90)):
+for x in list(range(700)):
     print("Loop:", x)
     for i in list(range(3)):
         while not ELEM_SELECT_TABLE.is_displayed:
