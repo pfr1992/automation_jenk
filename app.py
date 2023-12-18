@@ -147,7 +147,8 @@ def read_credentials(verbose=True):
 
 from seleniumbase import Driver
 
-driver = Driver(uc=True,headed=False,undetectable=True, undetected=True, agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+driver = Driver(uc=True,headed=False,undetectable=True, undetected=True,headless=False, user_data_dir='/home/paulofernando1992/chromedata',
+                agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 #driver.uc_open_with_reconnect("https://canal360i.cloud.itau.com.br/login/iparceiros",reconnect_time=5)
 driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
