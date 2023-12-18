@@ -149,54 +149,7 @@ from seleniumbase import Driver
 
 driver = Driver(uc=True,headed=False,undetectable=True, undetected=True,headless=False, user_data_dir='/home/paulofernando1992/chromedata',
                 agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-#driver.uc_open_with_reconnect("https://canal360i.cloud.itau.com.br/login/iparceiros",reconnect_time=5)
 driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
-
-
-
-# %% Chrome Options
-# options = uc.ChromeOptions()
-
-# # options.headless = True
-# options.user_data_dir = r"C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
-
-# options.add_argument("--window-size=1920,1080")
-# options.add_argument("--start-maximized")
-# options.add_argument("--disable-extensions")
-# options.add_argument("--disable-application-cache")
-# options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--start-zoom=25")
-
-# options.add_argument(
-#     r"--user-data-dir=C:\Users\Marco Sérvio\AppData\Local\Google\Chrome\User Data"
-# )
-
-# options.add_argument("--disable-gpu")
-# options.add_argument("--no-sandbox")
-# options.add_argument("--disable-setuid-sandbox")
-# # options.add_argument("--headless")
-
-# options.add_experimental_option(
-#     "prefs",
-#     {
-#         "download.default_directory": "C://projects//automation-consorcio",
-#         "download.prompt_for_download": False,
-#         "download.directory_upgrade": True,
-#         "safebrowsing.enabled": True,
-#     },
-# )
-
-# options.add_argument("--no-first-run --no-service-autorun --password-store=basic")
-# driver = uc.Chrome(use_subprocess=True, options=options)
-
-# driver.implicitly_wait(30)
-# driver.get("chrome://settings/")
-# driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
-# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
-
-# driver = Driver(uc=True)
-# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
-# driver.implicitly_wait(10)
 
 
 # %% Fechar Navegador
@@ -258,8 +211,6 @@ elem_login_button = find_element_load(driver, By.XPATH, ELEM_LOGIN_BUTTON_XPATH)
 elem_username.send_keys(username)
 elem_password.send_keys(password)
 elem_login_button.click()
-time.sleep(2)
-driver.save_screenshot("fotu.png")
 # %% Preencher Dados Cliente na tela
 ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
 
@@ -318,12 +269,39 @@ elem_filter_button = find_element_load(shadow_root1, By.ID, ELEM_FILTER_BUTTON_I
 elem_filter_button.click()
 
 
+# %% Check element Click e Send Key Terminar de Implementar isso
+def check_element_click(elemento):
+    while True:
+        try:
+            if elemento.is_displayed():
+                elemento.click()
+                break
+        except (
+            ElementClickInterceptedException,
+            StaleElementReferenceException,
+            NoSuchElementException,
+        ):
+            print("rrrrrElementClickInterceptedException occurred. Retrying...")
+
+def check_element_sendkey(elemento, texto):
+    while True:
+        try:
+            if elemento.is_displayed():
+                elemento.send_keys(texto)
+                break
+        except (
+            ElementClickInterceptedException,
+            StaleElementReferenceException,
+            NoSuchElementException,
+        ):
+            print("rrrrrElementClickInterceptedException occurred. Retrying...")
+
 # %% Contratar Cota
-def contratar_cota(nomePrint):
+def contratar_cota(grupoEncontrado):
     # Seleciona clicar em creditos disponiveis
     ELEM_TP_PRODUCT_ID = "//*[@id='voxel-modal-0']/voxel-modal-footer/footer/button"
     ELEM_EXIB_CRED_WW = find_element_load(driver, By.XPATH, ELEM_TP_PRODUCT_ID)
-    ELEM_EXIB_CRED_WW.click()
+    check_element_click(ELEM_EXIB_CRED_WW)
 
     # Clica em exibir creditos
     Ordernar_ID = "voxel-icon[data-name='valor_total_credito']"
@@ -361,7 +339,6 @@ def contratar_cota(nomePrint):
         ):
             print("rrrrrElementClickInterceptedException occurred. Retrying...")
 
-    # ELEM_SEGURO.click()
     elem_exib_cred_xpt_bt = find_elements_load(
         shadow_root1, By.CSS_SELECTOR, ELEM_TP_G_ID
     )
@@ -587,8 +564,8 @@ def contratar_cota(nomePrint):
 
     while url_atual != url_desejada:
         try:
-            BUTTON_CONTRATAR.click()
             url_atual = driver.current_url
+            BUTTON_CONTRATAR.click()
         except Exception:
             print("Tentando Clicar de novo.....")
 
@@ -597,9 +574,28 @@ def contratar_cota(nomePrint):
         shadow_root3, By.CSS_SELECTOR, BUTTON_IMPRIMIR_BOLETO_ID
     )
 
-    BUTTON_IMPRIMIR_BOLETO.click()
- 
+    janela_principal = driver.current_window_handle
 
+    BUTTON_IMPRIMIR_BOLETO.click()
+
+    time.sleep(5)
+
+    janelas = driver.window_handles
+
+    nova_janela = None
+    for janela in janelas:
+        if janela != janela_principal:
+            nova_janela = janela
+            break
+
+    driver.switch_to.window(nova_janela)
+
+    url_nova_guia = driver.current_url
+    driver.get("chrome://settings/")
+    driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.85);")
+    driver.get(url_nova_guia)
+    driver.save_screenshot("Boleto-" + grupoEncontrado + ".png")
+    driver.switch_to.window(janela_principal)
 
 # %% Verificar Grupo
 def verifica_grupo(row_gp):
@@ -639,11 +635,10 @@ def verifica_grupo(row_gp):
                         )
 
                 nomePrint = grupoEncontrado + ".png"
-                contratar_cota(nomePrint)
+                contratar_cota(grupoEncontrado)
                 driver.save_screenshot(nomePrint)
                 enviar_email(grupoEncontrado, "")
                 time.sleep(60000)
-
 
 # %% Enviar Email
 def enviar_email(grupo, proposta):
@@ -665,9 +660,7 @@ def enviar_email(grupo, proposta):
 
     mensagem.attach(MIMEText(corpo, "plain"))
 
-    arquivo_pdf = obter_ultimo_pdf()
-
-    nomes_arquivos = [grupo + ".png", arquivo_pdf]
+    nomes_arquivos = [grupo + ".png", "Boleto-" + grupo + ".png"]
 
     for nome_arquivo in nomes_arquivos:
         caminho_absoluto = os.path.abspath(nome_arquivo)
@@ -689,7 +682,7 @@ def enviar_email(grupo, proposta):
 
 
 def obter_ultimo_pdf():
-    todos_arquivos = glob.glob(os.path.join("\downloaded_files", "*"))
+    todos_arquivos = glob.glob(os.path.join("./downloaded_files", "*"))
 
     arquivos_pdf = [
         arquivo for arquivo in todos_arquivos if arquivo.lower().endswith(".pdf")
@@ -761,4 +754,3 @@ for x in list(range(700)):
 raise Exception("Reiniciando aplicação!")
 
 # %% capt()
-    
