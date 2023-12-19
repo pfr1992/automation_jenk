@@ -147,10 +147,20 @@ def read_credentials(verbose=True):
 
 from seleniumbase import Driver
 
-driver = Driver(uc=True,headed=False,undetectable=True, undetected=True,headless=False, user_data_dir='/home/paulofernando1992/chromedata',agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+driver = Driver(uc=True,headed=False,
+                undetectable=True, 
+                undetected=True,
+                headless=False, 
+                user_data_dir='/home/paulofernando1992/chromedata',
+                agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver.get("chrome://settings/")
 driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
+driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+
+# driver = Driver(uc=True)
+# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+# driver.implicitly_wait(10)
+
 
 # %% Fechar Navegador
 def fechar_cliente():
