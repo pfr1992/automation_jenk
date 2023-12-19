@@ -4,9 +4,7 @@ pipeline {
     stages {
         stage ('Inicial') {
             steps {
-                script {
-                    dockerapp = docker.build("fabricioveronez/web-live-app:${env.BUILD_ID}", "-f ./src/Dockerfile ./src")
-                }
+             echo "Hello Word"
             }
         }
         stage ('Get Source') {
