@@ -147,10 +147,10 @@ def read_credentials(verbose=True):
 
 from seleniumbase import Driver
 
-driver = Driver(uc=True,headed=False,undetectable=True, undetected=True,headless=False, user_data_dir='/home/paulofernando1992/chromedata',
-                agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+driver = Driver(uc=True,headed=False,undetectable=True, undetected=True,headless=False, user_data_dir='/home/paulofernando1992/chromedata',agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
-
+driver.get("chrome://settings/")
+driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
 
 # %% Fechar Navegador
 def fechar_cliente():
@@ -720,11 +720,15 @@ for x in list(range(700)):
         )
         ELEM_SELECT_PAGE.select_by_index(i)
         row_gp = find_elements_load(shadow_root1, By.ID, "idGrupoBtn")
-        try:
-            verifica_grupo(row_gp)
-        except Exception as ex:
-              print("Ocorreu um erro na página", i + 1, "do Loop", x, ":", ex)
-              print("Filtrando Novamente...")
+        
+        if row_gp:
+            try:
+                verifica_grupo(row_gp)
+            except Exception as ex:
+                print("Ocorreu um erro na página", i + 1, "do Loop", x, ":", ex)
+                print("Filtrando Novamente...")
+        else:
+            print("Nenhum elemento encontrado para verificar o grupo.")
 
     contador = 1
     while True:
