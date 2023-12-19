@@ -566,8 +566,8 @@ def contratar_cota(grupoEncontrado):
         try:
             url_atual = driver.current_url
             BUTTON_CONTRATAR.click()
-        except Exception:
-            print("Tentando Clicar de novo.....")
+        except Exception as ex:
+            print("Tentando Clicar de novo.....", x)
 
     BUTTON_IMPRIMIR_BOLETO_ID = "button[class='ids-button ng-star-inserted']"
     BUTTON_IMPRIMIR_BOLETO = find_element_return_vazio(
@@ -614,25 +614,21 @@ def verifica_grupo(row_gp):
             if row_gp[i].text in num_grupo_possiveis:
                 print("Valor Encontrado", row_gp[i].text)
                 grupoEncontrado = row_gp[i].text
-
+                max_attempts = 5
+                attempts = 0    
                 while True:
                     try:
                         if row_gp[i].is_displayed():
-                            driver.execute_script(
-                                "arguments[0].scrollIntoView(true)", row_gp[i]
-                            )
+                            driver.execute_script("arguments[0].scrollIntoView(true)", row_gp[i])
                             row_gp[i].click()
                             break
-
-                    except (
-                        ElementClickInterceptedException,
-                        StaleElementReferenceException,
-                        NoSuchElementException,
-                    ):
-                        print(
-                            "xxxxxxElementClickInterceptedException occurred. Retrying...",
-                            row_gp[i].text,
-                        )
+                    except Exception as ex:     
+                        attempts += 1
+                        if attempts >= max_attempts:     
+                            print("Limite de tentativas atingido. Saindo do loop.", max_attempts, " Tentativas")
+                            break
+                        else:
+                            print("Ocorreu um erro no click do item", row_gp[i].text, ":", ex)
 
                 nomePrint = grupoEncontrado + ".png"
                 contratar_cota(grupoEncontrado)
@@ -727,13 +723,8 @@ for x in list(range(700)):
         try:
             verifica_grupo(row_gp)
         except Exception as ex:
-            print(
-                "Ocorreu um erro na pagina",
-                i + 1,
-                "do Loop",
-                x,
-                "Filtrando Novamente...",
-            )
+              print("Ocorreu um erro na página", i + 1, "do Loop", x, ":", ex)
+              print("Filtrando Novamente...")
 
     contador = 1
     while True:
