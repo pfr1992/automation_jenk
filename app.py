@@ -19,6 +19,7 @@ from email.mime.application import MIMEApplication
 
 import undetected_chromedriver as uc
 import pandas as pd
+import sys
 import time
 import os
 import smtplib
@@ -144,28 +145,26 @@ def read_credentials(verbose=True):
 
 (username, company, password) = read_credentials()
 
-# %% Chrome Options
-DIR = "C:\\Users\\paulo\\AppData\\Local\\Google\\Chrome\\User Data"
-driver = Driver(
-    uc=True,
-    headed=False,
-    undetectable=True,
-    undetected=True,
-    headless=False,
-    user_data_dir=DIR,
-    agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-)
+from seleniumbase import Driver
+
+driver = Driver(uc=True,headed=False,
+                undetectable=True, 
+                undetected=True,
+                headless=False, 
+                user_data_dir='/home/paulofernando1992/chromedata',
+                agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
 driver.get("chrome://settings/")
 driver.execute_script("chrome.settingsPrivate.setDefaultZoom(0.25);")
 driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
 
+# driver = Driver(uc=True)
+# driver.get("https://canal360i.cloud.itau.com.br/login/iparceiros")
+# driver.implicitly_wait(10)
+
 
 # %% Fechar Navegador
 def fechar_cliente():
-    try:
-        driver.close()
-    except:
-        print("Navegador já está fechado")
+    driver.close()
 
 
 # %% Find Element Click
@@ -184,7 +183,7 @@ def find_element_click(driver, by, elem):
 # %% Find Element Load
 def find_element_load(driver, by, elem):
     try:
-        return WebDriverWait(driver, 60).until(
+        return WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((by, elem))
         )
     except:
@@ -219,19 +218,18 @@ elem_username = find_element_load(driver, By.ID, ELEM_USERNAME_ID)
 elem_password = find_element_load(driver, By.ID, ELEM_PASSWORD_ID)
 elem_login_button = find_element_load(driver, By.XPATH, ELEM_LOGIN_BUTTON_XPATH)
 
-time.sleep(1)
 elem_username.send_keys(username)
-time.sleep(1)
 elem_password.send_keys(password)
-time.sleep(1)
+time.sleep(2)
+ELEM_CAPTCHA_ID = "iframe[title='reCAPTCHA']"
+elem_captcha_iframe = find_element_load(driver, By.CSS_SELECTOR, ELEM_CAPTCHA_ID)
+driver.switch_to.frame(elem_captcha_iframe)
+
+elem_captcha_button = find_element_load(driver, By.CSS_SELECTOR, "span[id='recaptcha-anchor']")
+elem_captcha_button.click()
+time.sleep(2)
+driver.save_screenshot('logincomcaptcha.png')
 elem_login_button.click()
-
-ERRO_LOGIN = find_element_load(
-    driver,
-    By.CSS_SELECTOR,
-    "div[class='ng-tns-c113-0 toast-message ng-star-inserted']",
-)
-
 # %% Preencher Dados Cliente na tela
 ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
 
@@ -283,14 +281,14 @@ elem_dt_nasc.send_keys(dt_nasc)
 elem_tp_product = find_element_load(shadow_root1, By.CSS_SELECTOR, ELEM_TP_PRODUCT_ID)
 elem_tp_product.click()
 elem_tp_product_leves = find_element_load(
-    driver, By.CSS_SELECTOR, "voxel-option[id='voxel-option-0']"
+    driver, By.CSS_SELECTOR, "voxel-option[id='voxel-option-1']"
 ).click()
 
 elem_filter_button = find_element_load(shadow_root1, By.ID, ELEM_FILTER_BUTTON_ID)
 elem_filter_button.click()
 
 
-# %% Check element Click e Send Key
+# %% Check element Click e Send Key Terminar de Implementar isso
 def check_element_click(elemento):
     while True:
         try:
@@ -303,7 +301,6 @@ def check_element_click(elemento):
             NoSuchElementException,
         ):
             print("rrrrrElementClickInterceptedException occurred. Retrying...")
-
 
 def check_element_sendkey(elemento, texto):
     while True:
@@ -318,7 +315,6 @@ def check_element_sendkey(elemento, texto):
         ):
             print("rrrrrElementClickInterceptedException occurred. Retrying...")
 
-
 # %% Contratar Cota
 def contratar_cota(grupoEncontrado):
     # Seleciona clicar em creditos disponiveis
@@ -329,13 +325,13 @@ def contratar_cota(grupoEncontrado):
     # Clica em exibir creditos
     Ordernar_ID = "voxel-icon[data-name='valor_total_credito']"
     Ordernar = find_element_load(shadow_root1, By.CSS_SELECTOR, Ordernar_ID)
-    check_element_click(Ordernar)
+    Ordernar.click()
 
     ELEM_TP_PRODUCT_ID = "voxel-icon[variant='secondary']"
     ELEM_EXIB_CRED_XPT = find_elements_load(
         shadow_root1, By.CSS_SELECTOR, ELEM_TP_PRODUCT_ID
     )[0]
-    check_element_click(ELEM_EXIB_CRED_XPT)
+    ELEM_EXIB_CRED_XPT.click()
 
     # Clica em contratar a cota
     ELEM_TP_G_ID = "button[voxelbutton]"
@@ -349,12 +345,34 @@ def contratar_cota(grupoEncontrado):
     ELEM_SEGURO = find_elements_load(shadow_root1, By.CSS_SELECTOR, ELEM_SEGURO_CLASS)[
         0
     ]
-    check_element_click(ELEM_SEGURO)
+
+    while True:
+        try:
+            if ELEM_SEGURO.is_displayed():
+                ELEM_SEGURO.click()
+                break
+        except (
+            ElementClickInterceptedException,
+            StaleElementReferenceException,
+            NoSuchElementException,
+        ):
+            print("rrrrrElementClickInterceptedException occurred. Retrying...")
 
     elem_exib_cred_xpt_bt = find_elements_load(
         shadow_root1, By.CSS_SELECTOR, ELEM_TP_G_ID
     )
-    check_element_click(elem_exib_cred_xpt_bt[0])
+
+    while True:
+        try:
+            if elem_exib_cred_xpt_bt[0].is_displayed():
+                elem_exib_cred_xpt_bt[0].click()
+                break
+        except (
+            ElementClickInterceptedException,
+            StaleElementReferenceException,
+            NoSuchElementException,
+        ):
+            print("rrrrrElementClickInterceptedException occurred. Retrying...")
 
     # Selecionar o Shadow Content de cadastro de cliente
     shadow_host2 = find_element_load(
@@ -393,123 +411,118 @@ def contratar_cota(grupoEncontrado):
     ELEM_GENERO.click()
     ELEM_GENERO_MASC = find_element_load(
         driver, By.CSS_SELECTOR, "voxel-option[id='voxel-option-0']"
-    )
-    check_element_click(ELEM_GENERO_MASC)
+    ).click()
 
     # Nacionalidade
     ELEM_NACIONALIDADE = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_NACIONALIDADE_ID
     )
-    check_element_click(ELEM_NACIONALIDADE)
+    ELEM_NACIONALIDADE.click()
     ELEM_NACIONALIDADE_BR = driver.find_element(
         By.CSS_SELECTOR, "voxel-option[id='voxel-option-11']"
-    )
-    check_element_click(ELEM_NACIONALIDADE_BR)
+    ).click()
 
     # Estado Civil
     ELEM_ESTADO_CIVIL = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_ESTADO_CIVIL_ID
     )
-    check_element_click(ELEM_ESTADO_CIVIL)
+    ELEM_ESTADO_CIVIL.click()
     ELEM_ESTADO_CIVIL_ID_Solt = find_element_load(
         driver, By.CSS_SELECTOR, "voxel-option[id='voxel-option-2']"
-    )
-    check_element_click(ELEM_ESTADO_CIVIL_ID_Solt)
+    ).click()
     ELEM_EXTERIOR = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_EXTERIOR_ID)
-    check_element_click(ELEM_EXTERIOR)
+    ELEM_EXTERIOR.click()
 
     ELEM_EXPOST_POLIT = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_EXPOST_POLIT_ID
     )
-    check_element_click(ELEM_EXPOST_POLIT)
+    ELEM_EXPOST_POLIT.click()
 
     ELEM_TIPO_DOCUMETO = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_TIPO_DOCUMETO_ID
     )
-    check_element_click(ELEM_TIPO_DOCUMETO)
+    ELEM_TIPO_DOCUMETO.click()
     ELEM_TIPO_DOCUMETO_RG = find_element_load(
         driver, By.CSS_SELECTOR, "voxel-option[id='voxel-option-8']"
-    )
-    check_element_click(ELEM_TIPO_DOCUMETO_RG)
+    ).click()
 
     # Documento
     ELEM_NUMERO_DOCUMENTO = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_NUMERO_DOCUMENTO_ID
     )
-    check_element_sendkey(ELEM_NUMERO_DOCUMENTO, num_doc)
+    ELEM_NUMERO_DOCUMENTO.send_keys(num_doc)
 
     ELEM_ORGAO = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_ORGAO_ID)
-    check_element_sendkey(ELEM_ORGAO, org_expd)
+    ELEM_ORGAO.send_keys(org_expd)
 
     ELEM_UF_EXPEDIDOR = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_UF_EXPEDIDOR_ID
     )
-    check_element_sendkey(ELEM_UF_EXPEDIDOR, uf_exped)
+    ELEM_UF_EXPEDIDOR.send_keys(uf_exped)
     ELEM_UF_EXPEDIDOR_MG = find_element_load(
         driver, By.CSS_SELECTOR, "mat-option[id='mat-option-10']"
-    )
-    check_element_click(ELEM_UF_EXPEDIDOR_MG)
+    ).click()
 
     ELEM_DATA_EXPD = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_DATA_EXPD_ID)
-    check_element_sendkey(ELEM_DATA_EXPD, Dt_expedi)
+    ELEM_DATA_EXPD.send_keys(Dt_expedi)
 
     # RESIDENCIA
     ELEM_CEP = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_CEP_ID)
-    check_element_sendkey(ELEM_CEP, cep)
+    ELEM_CEP.send_keys(cep)
 
     ELEM_LOGRADOURO = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_LOGRADOURO_ID
     )
-    check_element_sendkey(ELEM_LOGRADOURO, logradouro)
+    ELEM_LOGRADOURO.send_keys(logradouro)
 
     ELEM_NUMERO_RESIDENC = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_NUMERO_RESIDENC_ID
     )
-    check_element_sendkey(ELEM_NUMERO_RESIDENC, num_resid)
+    ELEM_NUMERO_RESIDENC.send_keys(num_resid)
 
     ELEM_COMPLEMENTO = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_COMPLEMENTO_ID
     )
-    check_element_sendkey(ELEM_COMPLEMENTO, complemento)
+    ELEM_COMPLEMENTO.send_keys(complemento)
 
     ELEM_BAIRRO = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_BAIRRO_ID)
-    check_element_sendkey(ELEM_BAIRRO, bairro)
+    ELEM_BAIRRO.send_keys(bairro)
 
     ELEM_CIDADE = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_CIDADE_ID)
-    check_element_sendkey(ELEM_CIDADE, cidade)
+    ELEM_CIDADE.send_keys(cidade)
 
     ELEM_UF = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_UF_ID)
-    check_element_sendkey(ELEM_UF, estado)
+    ELEM_UF.send_keys(estado)
 
     # CONTATO E DADOS PESSOAIS
     ELEM_CEL = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_CEL_ID)
-    check_element_sendkey(ELEM_CEL, celular)
+    ELEM_CEL.send_keys(celular)
 
     ELEM_EMAIL = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_EMAIL_ID)
-    check_element_sendkey(ELEM_EMAIL, email)
+    ELEM_EMAIL.send_keys(email)
 
     ELEM_AUTORIZACAO_ID = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_AUTORIZACAO_ID
     )
 
-    check_element_click(ELEM_AUTORIZACAO_ID)
+    ELEM_AUTORIZACAO_ID.click()
     ELEM_PROFISSAO = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_PROFISSAO_ID)
-    check_element_sendkey(ELEM_PROFISSAO, profissao)
+    ELEM_PROFISSAO.send_keys(profissao)
     ELEM_PROFISSAO_select = find_elements_load(driver, By.ID, "mat-autocomplete-0")[0]
-    check_element_click(ELEM_PROFISSAO_select)
+    ELEM_PROFISSAO_select.click()
 
     ELEM_RENDA_MENSAL = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_RENDA_MENSAL_ID
     )
-    check_element_sendkey(ELEM_RENDA_MENSAL, renda_mensal)
+    ELEM_RENDA_MENSAL.send_keys(renda_mensal)
 
     ELEM_PATRIMONIO = find_element_load(
         shadow_root2, By.CSS_SELECTOR, ELEM_PATRIMONIO_ID
     )
-    check_element_sendkey(ELEM_PATRIMONIO, patrimonio)
+    ELEM_PATRIMONIO.send_keys(patrimonio)
 
     ELEM_CONTINUAR = find_element_load(shadow_root2, By.CSS_SELECTOR, ELEM_CONTINUAR_ID)
-    check_element_click(ELEM_CONTINUAR)
+    ELEM_CONTINUAR.click()
 
     # Selecionar o Shadow Content de Contratação
     shadow_host3 = find_element_load(
@@ -543,22 +556,22 @@ def contratar_cota(grupoEncontrado):
     TERMOS_CONTRATA_2_ID = "input[id='voxel-checkbox-2']"
 
     FORM_RECEBER = find_element_load(shadow_root3, By.CSS_SELECTOR, FORM_RECEBER_ID)
-    check_element_click(FORM_RECEBER)
+    FORM_RECEBER.click()
 
     TERMOS_CONTRATA_1 = find_element_load(
         shadow_root3, By.CSS_SELECTOR, TERMOS_CONTRATA_1_ID
     )
-    check_element_click(TERMOS_CONTRATA_1)
+    TERMOS_CONTRATA_1.click()
 
     TERMOS_CONTRATA_2 = find_element_load(
         shadow_root3, By.CSS_SELECTOR, TERMOS_CONTRATA_2_ID
     )
-    check_element_click(TERMOS_CONTRATA_2)
+    TERMOS_CONTRATA_2.click()
 
     BUTTON_FIM_ID = "button[class='ids-button']"
 
     BUTTON_FIM = find_element_load(shadow_root3, By.CSS_SELECTOR, BUTTON_FIM_ID)
-    check_element_click(BUTTON_FIM)
+    BUTTON_FIM.click()
     BUTTON_CONTRATAR_ID = "button[id='btn-contratar-formalizacao']"
 
     BUTTON_CONTRATAR = find_element_load(
@@ -572,8 +585,8 @@ def contratar_cota(grupoEncontrado):
         try:
             url_atual = driver.current_url
             BUTTON_CONTRATAR.click()
-        except Exception:
-            print("Tentando Clicar de novo.....")
+        except Exception as ex:
+            print("Tentando Clicar de novo.....", x)
 
     BUTTON_IMPRIMIR_BOLETO_ID = "button[class='ids-button ng-star-inserted']"
     BUTTON_IMPRIMIR_BOLETO = find_element_return_vazio(
@@ -582,9 +595,9 @@ def contratar_cota(grupoEncontrado):
 
     janela_principal = driver.current_window_handle
 
-    check_element_click(BUTTON_IMPRIMIR_BOLETO)
+    BUTTON_IMPRIMIR_BOLETO.click()
 
-    time.sleep(10)
+    time.sleep(5)
 
     janelas = driver.window_handles
 
@@ -603,7 +616,6 @@ def contratar_cota(grupoEncontrado):
     driver.save_screenshot("Boleto-" + grupoEncontrado + ".png")
     driver.switch_to.window(janela_principal)
 
-
 # %% Verificar Grupo
 def verifica_grupo(row_gp):
     ELEM_TP_PRODUCT_ID = "//*[@id='voxel-modal-0']/div[2]/button"
@@ -618,44 +630,34 @@ def verifica_grupo(row_gp):
 
     for i in range(len(row_gp)):
         if row_gp[i] is not None:
-            try:
-                if row_gp[i].text in num_grupo_possiveis:
-                    print("Valor Encontrado", row_gp[i].text)
-                    grupoEncontrado = row_gp[i].text
+            if row_gp[i].text in num_grupo_possiveis:
+                print("Valor Encontrado", row_gp[i].text)
+                grupoEncontrado = row_gp[i].text
+                max_attempts = 5
+                attempts = 0    
+                while True:
+                    try:
+                        if row_gp[i].is_displayed():
+                            driver.execute_script("arguments[0].scrollIntoView(true)", row_gp[i])
+                            row_gp[i].click()
+                            break
+                    except Exception as ex:     
+                        attempts += 1
+                        if attempts >= max_attempts:     
+                            print("Limite de tentativas atingido. Saindo do loop.", max_attempts, " Tentativas")
+                            break
+                        else:
+                            print("Ocorreu um erro no click do item", row_gp[i].text, ":", ex)
 
-                    while True:
-                        try:
-                            if row_gp[i].is_displayed():
-                                driver.execute_script(
-                                    "arguments[0].scrollIntoView(true)", row_gp[i]
-                                )
-                                row_gp[i].click()
-                                break
-
-                        except (
-                            ElementClickInterceptedException,
-                            StaleElementReferenceException,
-                            NoSuchElementException,
-                        ):
-                            print(
-                                "xxxxxxElementClickInterceptedException occurred. Retrying...",
-                                row_gp[i].text,
-                            )
-
-                    nomePrint = grupoEncontrado + ".png"
-                    contratar_cota(grupoEncontrado)
-                    driver.save_screenshot(nomePrint)
-                    enviar_email(grupoEncontrado, "")
-                    time.sleep(60000)
-            except Exception:  # StaleElementReferenceException:
-                time.sleep(0.5)
-                row_gp = find_elements_load(shadow_root1, By.ID, "idGrupoBtn")
-                verifica_grupo(row_gp)
-
+                nomePrint = grupoEncontrado + ".png"
+                contratar_cota(grupoEncontrado)
+                driver.save_screenshot(nomePrint)
+                enviar_email(grupoEncontrado, "")
+                time.sleep(60000)
 
 # %% Enviar Email
 def enviar_email(grupo, proposta):
-    destinatario = "paulofernando1992@gmail.com"
+    destinatario = "paulofernando1992@gmail.com, marcoservio22@hotmail.com, marco_tulio97@hotmail.com"
     assunto = "Vaga encontrada!!"
     corpo = "Proposta: " + proposta + " - " + "Grupo: " + grupo
 
@@ -669,7 +671,7 @@ def enviar_email(grupo, proposta):
     mensagem["From"] = remetente
     mensagem["To"] = destinatario
     mensagem["Subject"] = assunto
-    mensagem["Cc"] = ""
+    mensagem["Cc"] = "marcoservio22@hotmail.com, marco_tulio97@hotmail.com"
 
     mensagem.attach(MIMEText(corpo, "plain"))
 
@@ -723,7 +725,7 @@ ELEM_SELECT_TABLE = find_element_load(
     shadow_root1, By.CSS_SELECTOR, ELEM_SELECT_TABLE_ID
 )
 
-for x in list(range(450)):
+for x in list(range(700)):
     print("Loop:", x)
     for i in list(range(3)):
         while not ELEM_SELECT_TABLE.is_displayed:
@@ -737,11 +739,15 @@ for x in list(range(450)):
         )
         ELEM_SELECT_PAGE.select_by_index(i)
         row_gp = find_elements_load(shadow_root1, By.ID, "idGrupoBtn")
-        try:
-            verifica_grupo(row_gp)
-        except Exception as ex:
-            print("Ocorreu um erro na pagina", i + 1, "do Loop", x, "-->", ex)
-            print("Filtrando Novamente...")
+        
+        if row_gp:
+            try:
+                verifica_grupo(row_gp)
+            except Exception as ex:
+                print("Ocorreu um erro na página", i + 1, "do Loop", x, ":", ex)
+                print("Filtrando Novamente...")
+        else:
+            print("Nenhum elemento encontrado para verificar o grupo.")
 
     contador = 1
     while True:
