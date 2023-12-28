@@ -229,6 +229,7 @@ elem_captcha_button = find_element_load(driver, By.CSS_SELECTOR, "span[id='recap
 elem_captcha_button.click()
 time.sleep(2)
 driver.save_screenshot('logincomcaptcha.png')
+driver.close()
 elem_login_button.click()
 # %% Preencher Dados Cliente na tela
 ELEM_DISCOUNT_ITEM_EXPANDER_XPATH = "menu-simulação e contratação"
